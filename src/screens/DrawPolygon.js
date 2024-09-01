@@ -24,8 +24,6 @@ const DrawPolygon = () => {
   const [userLocation, setUserLocation] = useState([-73.985, 40.763]); // Default location (NYC)
 
   useEffect(() => {
-    <MapboxGL.Images key="icon" images={{assets: ['gps']}} />;
-
     MapboxGL.setAccessToken(
       'sk.eyJ1Ijoic3dhcm9vcGExOTk0a3Jpc2huYSIsImEiOiJjbTBpMGJvdnMwNzY0MmtzYW5xNmdlMW93In0.lQI8ZhgUtwZjQTT_yG19zQ',
     );
@@ -106,7 +104,12 @@ const DrawPolygon = () => {
     <View style={styles.container}>
       <MapboxGL.MapView style={styles.map} onPress={handleMapPress}>
         <MapboxGL.Camera zoomLevel={14} centerCoordinate={userLocation} />
-
+        <MapboxGL.Images
+          images={{
+            'custom-marker': require('../assets/location.png'),
+            'cluster-marker': require('../assets/pin.png'), // Path to your custom marker
+          }}
+        />
         {coordinates.length > 2 && (
           <MapboxGL.ShapeSource
             id="polygonSource"
@@ -157,7 +160,7 @@ const DrawPolygon = () => {
             features: markers, // Use markers generated from polygons
           }}>
           {/* Cluster Layer - shows cluster circles */}
-          <MapboxGL.CircleLayer
+          {/* <MapboxGL.CircleLayer
             id="clusteredPoints"
             belowLayerID="pointCount"
             filter={['has', 'point_count']}
@@ -173,6 +176,23 @@ const DrawPolygon = () => {
                 30, // Circle size for clusters with more than 25 points
               ],
               circleOpacity: 0.8,
+            }}
+          /> */}
+          <MapboxGL.SymbolLayer
+            id="clusteredPoints"
+            filter={['has', 'point_count']}
+            style={{
+              iconImage: 'cluster-marker', // Use custom marker icon for clusters
+              iconSize: [
+                'step',
+                ['get', 'point_count'],
+                1.2, // Base size for clusters with up to 10 points
+                5,
+                0.2, // Slightly larger for clusters with up to 25 points
+                10,
+                0.4, // Larger for clusters with more than 25 points
+              ],
+              iconAllowOverlap: true, // Allow overlapping of cluster markers
             }}
           />
 
@@ -192,8 +212,8 @@ const DrawPolygon = () => {
             id="individualMarkers"
             filter={['!', ['has', 'point_count']]}
             style={{
-              iconImage: 'marker-15', // Use default marker icon
-              iconSize: 2.5,
+              iconImage: 'custom-marker', // Use default marker icon
+              iconSize: 0.05,
               iconAllowOverlap: true, // Allow overlapping of markers
             }}
           />
